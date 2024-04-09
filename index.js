@@ -1,5 +1,6 @@
 import express from "express";
 import mysql from "mysql2/promise";
+import path from "path";
 
 import https from 'https';
 import fs from 'fs';
