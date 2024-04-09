@@ -14,21 +14,23 @@ async function main() {
         database: process.env.DB_NAME,
     });
 
-    const query = `
-    DROP TABLE IF EXISTS diagnostic;
-    CREATE TABLE diagnostic(id INT PRIMARY KEY, text VARCHAR(255) NOT NULL);
-    INSERT INTO diagnostic (text) VALUES ("MySQL is working for simkop");
-    `
-    await connection.execute(query);
-
-    console.log("Test Query Result:", rows);
+    const queries = [
+	   `DROP TABLE IF EXISTS diagnostic;`,
+	   `CREATE TABLE diagnostic(id INT PRIMARY KEY AUTO_INCREMENT, text VARCHAR(255) NOT NULL);`,
+	   `INSERT INTO diagnostic (text) VALUES ("MySQL is working for simkop");`,
+    ]
+	for (const query of queries) {
+		await connection.execute(query);
+    }
 
     // create express server
     const app = express();
 
+    const testQuery = ` SELECT * FROM diagnostic; `;
     app.get("/", async (req, res) => {
         const dbres = await connection.execute(testQuery);
-        res.send(base + JSON.stringify(dbres));
+        let base = "<h1>MySQL Results:</h1>";
+        res.send(base + JSON.stringify(dbres[0]));
     });
 
     // listen on port 8000
