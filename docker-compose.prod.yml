@@ -1,0 +1,55 @@
+version: "3"
+services:
+  app:
+    build:
+      context: .
+    environment:
+      DB_HOST: mysql
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      IS_PROD: ${IS_PROD}
+      CERT_PATH: ${CERT_PATH}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - tree-network
+    volumes:
+      - ./frontend/src:/app/frontend/src
+      - ./backend:/app/backend
+      - ./cache:/app/cache
+      - ${VOL_PATH}:${VOL_PATH}
+
+  mysql:
+    image: mysql:latest
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    networks:
+      - tree-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysql -h localhost -u ${DB_USER} -p${DB_PASSWORD} -e 'SELECT 1'",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:
+
+networks:
+  tree-network:
+    driver: bridge
